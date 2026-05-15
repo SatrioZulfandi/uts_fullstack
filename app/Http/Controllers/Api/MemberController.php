@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\CheckInSuccessMail;
 use App\Models\BorrowingSchedule;
 use App\Models\Inventory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * API Controller untuk fitur member (Tablet App).
@@ -84,14 +87,34 @@ class MemberController extends Controller
             $schedule->inventory->update(['status' => 'borrowed']);
         });
 
-        // Refresh data setelah update
+        // Refresh data setelah update & load relasi yang dibutuhkan untuk email
         $schedule->refresh();
-        $schedule->load('inventory');
+        $schedule->load(['inventory', 'user']);
+
+        // Kirim notifikasi email ke member
+        $emailSent = false;
+        try {
+            Mail::to($schedule->user->email)->send(new CheckInSuccessMail($schedule));
+            $emailSent = true;
+
+            Log::info('Check-in email berhasil dikirim.', [
+                'user_id'     => $schedule->user->id,
+                'schedule_id' => $schedule->id,
+            ]);
+        } catch (\Exception $e) {
+            // Log error tetapi jangan gagalkan proses check-in
+            Log::error('Gagal mengirim email check-in.', [
+                'user_id'     => $schedule->user->id,
+                'schedule_id' => $schedule->id,
+                'error'       => $e->getMessage(),
+            ]);
+        }
 
         return response()->json([
-            'status'  => true,
-            'message' => 'Check-in berhasil dilakukan.',
-            'data'    => [
+            'status'     => true,
+            'message'    => 'Check-in berhasil dilakukan.',
+            'email_sent' => $emailSent,
+            'data'       => [
                 'schedule'  => $schedule,
                 'inventory' => $schedule->inventory,
             ],
