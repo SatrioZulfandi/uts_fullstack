@@ -28,13 +28,42 @@ Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman invent
 
 - **Framework:** Laravel 13
 - **PHP:** >= 8.3
-- **Database:** MySQL
+- **Database:** Supabase PostgreSQL (Production) / MySQL (Local Dev)
 - **Frontend:** Blade Templating + Vanilla CSS (Custom Linear-style UI)
 - **API Authentication:** Laravel Sanctum
 
 ---
 
-## ⚙️ Cara Instalasi
+## ☁️ Cloud Database (Supabase PostgreSQL)
+
+Aplikasi ini menggunakan **Supabase PostgreSQL** sebagai database utama. Arsitektur backend hanya menggunakan koneksi PDO standar tanpa Supabase Auth atau Service-Role Key.
+
+1. **Requirement:** Pastikan ekstensi `pdo_pgsql` aktif di file `php.ini` Anda.
+2. **Koneksi:** Karena pengembangan menggunakan jaringan tanpa IPv6, koneksi wajib menggunakan fitur **Session Pooler** dari Supabase.
+3. **Environment:** Di file `.env`, gunakan parameter berikut (jangan pernah commit password ke Git):
+   ```env
+   DB_CONNECTION=pgsql
+   DB_HOST=<supabase-session-pooler-host>
+   DB_PORT=5432
+   DB_DATABASE=postgres
+   DB_USERNAME=<supabase-username>
+   DB_PASSWORD=<supabase-password>
+   DB_SSLMODE=require
+   ```
+4. **Setup:**
+   ```bash
+   php artisan migrate --force
+   php artisan db:seed --force
+   ```
+> ⚠️ **PERINGATAN TESTING**: Jangan pernah menjalankan perintah *automated test*, `migrate:fresh`, atau `db:wipe` jika `.env` masih mengarah ke database production Supabase ini. Selalu gunakan MySQL lokal yang terpisah untuk testing.
+
+*Dokumentasi lengkap deploy Supabase:* [docs/uas/06-supabase-deployment.md](docs/uas/06-supabase-deployment.md)
+
+---
+
+## ⚙️ Cara Instalasi (MySQL Lokal)
+
+Jika Anda ingin menjalankan secara murni di MySQL lokal tanpa koneksi internet/Supabase:
 
 1. **Clone repositori ini**
    ```bash
@@ -52,7 +81,7 @@ Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman invent
    ```bash
    cp .env.example .env
    ```
-   Atur koneksi database Anda di file `.env`:
+   Atur koneksi database Anda di file `.env` (kembalikan ke `mysql`):
    ```env
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1

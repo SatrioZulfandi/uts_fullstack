@@ -189,4 +189,56 @@ class ApiAdminTest extends TestCase
 
         $response->assertStatus(409);
     }
+
+    public function test_search_inventory_case_insensitive(): void
+    {
+        Inventory::create(['name' => 'Laptop Editing', 'type' => 'equipment', 'status' => 'available']);
+
+        // Search dengan huruf kapital semua harus tetap menemukan "Laptop Editing"
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('/api/admin/inventories?search=LAPTOP');
+
+        $response->assertStatus(200);
+        $this->assertCount(1, $response->json('data'));
+        $this->assertEquals('Laptop Editing', $response->json('data.0.name'));
+    }
+
+    public function test_search_member_case_insensitive(): void
+    {
+        // member sudah dibuat di setUp()
+        $name = $this->member->name;
+
+        // Search dengan case berbeda
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->getJson('/api/admin/members?search='.strtoupper($name));
+
+        $response->assertStatus(200);
+        $this->assertGreaterThanOrEqual(1, count($response->json('data')));
+    }
+
+    public function test_fk_restrict_schedule_tidak_terhapus_saat_inventory_dihapus_via_api(): void
+    {
+        $inventory = Inventory::create(['name' => 'Kamera FK Test', 'type' => 'equipment', 'status' => 'available']);
+
+        $schedule = BorrowingSchedule::create([
+            'user_id' => $this->member->id,
+            'inventory_id' => $inventory->id,
+            'start_time' => now()->addHour(),
+            'end_time' => now()->addHours(2),
+            'status' => 'booked',
+        ]);
+
+        // API harus menolak
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer '.$this->adminToken,
+        ])->deleteJson('/api/admin/inventories/'.$inventory->id);
+
+        $response->assertStatus(409);
+
+        // Schedule harus tetap ada
+        $this->assertDatabaseHas('borrowing_schedules', ['id' => $schedule->id]);
+        $this->assertDatabaseHas('inventories', ['id' => $inventory->id]);
+    }
 }

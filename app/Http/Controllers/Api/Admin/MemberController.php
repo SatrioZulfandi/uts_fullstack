@@ -17,13 +17,17 @@ class MemberController extends Controller
     {
         $query = User::where('role', 'member')->select('id', 'name', 'email');
 
-        if ($request->has('search') && ! empty($request->search)) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%')
-                    ->orWhere('email', 'like', '%'.$search.'%');
+        $search = $request->input('search');
+
+        $query->when($search, function ($query, $search) {
+            $pattern = '%'.$search.'%';
+
+            $query->where(function ($subQuery) use ($pattern) {
+                $subQuery
+                    ->whereLike('name', $pattern)
+                    ->orWhereLike('email', $pattern);
             });
-        }
+        });
 
         // Tidak perlu pagination jika ini hanya untuk opsi dropdown, atau kita paginate
         $members = $query->orderBy('name', 'asc')->get();

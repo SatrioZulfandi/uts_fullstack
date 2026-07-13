@@ -114,7 +114,7 @@ class ApiAuthTest extends TestCase
         $token = $user->createToken('test')->plainTextToken;
 
         $response = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->postJson('/api/logout');
 
         $response->assertStatus(200)
@@ -124,7 +124,7 @@ class ApiAuthTest extends TestCase
         $this->app->get('auth')->forgetGuards();
 
         $response2 = $this->withHeaders([
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => 'Bearer '.$token,
         ])->getJson('/api/me');
 
         $response2->assertStatus(401);

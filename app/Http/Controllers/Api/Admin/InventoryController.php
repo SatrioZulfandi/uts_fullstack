@@ -18,9 +18,11 @@ class InventoryController extends Controller
     {
         $query = Inventory::query();
 
-        if ($request->has('search') && ! empty($request->search)) {
-            $query->where('name', 'like', '%'.$request->search.'%');
-        }
+        $search = $request->input('search');
+
+        $query->when($search, function ($query, $search) {
+            $query->whereLike('name', '%'.$search.'%');
+        });
 
         if ($request->has('type') && ! empty($request->type)) {
             $query->where('type', $request->type);

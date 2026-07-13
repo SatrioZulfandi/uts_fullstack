@@ -19,14 +19,21 @@ class ScheduleController extends Controller
     {
         $query = BorrowingSchedule::with(['user', 'inventory']);
 
-        if ($request->has('search') && ! empty($request->search)) {
-            $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%');
-            })->orWhereHas('inventory', function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%');
+        $search = $request->input('search');
+
+        $query->when($search, function ($query, $search) {
+            $pattern = '%'.$search.'%';
+
+            $query->where(function ($subQuery) use ($pattern) {
+                $subQuery
+                    ->whereHas('user', function ($userQuery) use ($pattern) {
+                        $userQuery->whereLike('name', $pattern);
+                    })
+                    ->orWhereHas('inventory', function ($inventoryQuery) use ($pattern) {
+                        $inventoryQuery->whereLike('name', $pattern);
+                    });
             });
-        }
+        });
 
         if ($request->has('status') && ! empty($request->status)) {
             $query->where('status', $request->status);
