@@ -11,6 +11,11 @@ Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman invent
 - **Statistik:** Ringkasan jumlah inventaris, status, dan peminjaman aktif.
 - **UI/UX Modern:** Tampilan *Light Mode* yang bersih dan premium menggunakan Vanilla CSS.
 
+### 📱 Member Frontend (BFF Architecture)
+- **Terpisah:** Frontend untuk Member dikelola di repositori terpisah (`smart-hub-frontend`).
+- **Tech Stack:** Laravel 13, Vue 3, Inertia.js, TailwindCSS.
+- **BFF Pattern:** Tidak menggunakan koneksi database langsung, melainkan menggunakan `smart_hub.token` di Server File Session dan mengkonsumsi REST API Backend.
+
 ### 📱 REST API Lengkap
 - **Otentikasi:** Login via Laravel Sanctum (Bearer Token).
 - **Member API:**
