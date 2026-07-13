@@ -1,167 +1,85 @@
-# Smart-Hub Management System
+# Smart-Hub Management System - Backend API
 
-Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman inventaris seperti ruang kerja (workspace) dan perlengkapan studio (equipment). Aplikasi ini menyediakan Dashboard Admin dengan desain modern (terinspirasi dari Linear.app) dan REST API untuk aplikasi sisi member.
+Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman inventaris seperti ruang kerja (workspace) dan perlengkapan studio (equipment). Aplikasi ini menyediakan REST API lengkap untuk otentikasi, manajemen inventaris, penjadwalan, dan transaksi check-in yang aman.
 
-## 🚀 Fitur Utama
+## 🚀 Fitur Utama & Struktur
+- **Manajemen Inventaris:** Admin dapat mengelola *workspace* dan *equipment*.
+- **Manajemen Penjadwalan:** Admin dapat membuat dan mengubah jadwal dengan mekanisme pencegahan jadwal bertabrakan (*overlap prevention*).
+- **Check-in Atomik:** Mekanisme peminjaman menggunakan transaksi database dan penguncian baris (`lockForUpdate`) untuk mencegah *Double Check-in*.
+- **Role-based Access Control:** Rute API terpisah untuk akses Admin dan Member, dilindungi oleh *Middleware* khusus.
 
-### 🖥️ Admin Dashboard (Web Panel)
-- **Otentikasi:** Login khusus Administrator.
-- **Manajemen Inventaris:** CRUD (Create, Read, Update, Delete) untuk workspace dan perlengkapan dengan status ketersediaan (*available, maintenance, borrowed*).
-- **Jadwal Peminjaman:** Mengelola jadwal peminjaman dari member.
-- **Statistik:** Ringkasan jumlah inventaris, status, dan peminjaman aktif.
-- **UI/UX Modern:** Tampilan *Light Mode* yang bersih dan premium menggunakan Vanilla CSS.
-
-### 📱 Member Frontend (BFF Architecture)
-- **Terpisah:** Frontend untuk Member dikelola di repositori terpisah (`smart-hub-frontend`).
-- **Tech Stack:** Laravel 13, Vue 3, Inertia.js, TailwindCSS.
-- **BFF Pattern:** Tidak menggunakan koneksi database langsung, melainkan menggunakan `smart_hub.token` di Server File Session dan mengkonsumsi REST API Backend.
-
-### 📱 REST API Lengkap
-- **Otentikasi:** Login via Laravel Sanctum (Bearer Token).
-- **Member API:**
-  - Lihat daftar inventaris.
-  - Lihat daftar jadwal peminjaman (`/api/my-schedules`).
-  - Proses check-in peralatan secara atomik (`/api/check-in`).
-- **Admin API:**
-  - Manajemen penuh (CRUD) untuk *Inventory* dan *Schedules*.
-  - Lookup daftar *Members*.
-  - *Catatan:* Semua route Admin dilindungi oleh validasi Role Admin.
-- **Aturan Check-in (Check-in Rules):**
-  - Check-in hanya dapat dilakukan oleh member yang bersangkutan.
-  - Menggunakan *Database Transaction* dengan `lockForUpdate` untuk mencegah *Double Check-in*.
-  - Jika terjadi tabrakan, API akan mengembalikan `409 Conflict`.
-
----
-
-## 🛠️ Tech Stack
-
+## 🛠️ Tech Stack & Arsitektur
+Aplikasi Backend ini beroperasi murni sebagai penyedia antarmuka REST API dan sumber kebenaran (*Source of Truth*) bagi aplikasi *Frontend*.
 - **Framework:** Laravel 13
 - **PHP:** >= 8.3
-- **Database:** Supabase PostgreSQL (Production) / MySQL (Local Dev)
-- **Frontend:** Blade Templating + Vanilla CSS (Custom Linear-style UI)
-- **API Authentication:** Laravel Sanctum
+- **Database:** Supabase PostgreSQL (Local & Production)
+- **API Authentication:** Laravel Sanctum (Token-based)
 
----
+## 🔗 Tautan Repositori Pasangan
+- **Frontend Repository:** [https://github.com/SatrioZulfandi/smart-hub-frontend](https://github.com/SatrioZulfandi/smart-hub-frontend)
 
-## ☁️ Cloud Database (Supabase PostgreSQL)
+## ⚙️ Persyaratan & Instalasi Lokal
 
-Aplikasi ini menggunakan **Supabase PostgreSQL** sebagai database utama. Arsitektur backend hanya menggunakan koneksi PDO standar tanpa Supabase Auth atau Service-Role Key.
-
-1. **Requirement:** Pastikan ekstensi `pdo_pgsql` aktif di file `php.ini` Anda.
-2. **Koneksi:** Karena pengembangan menggunakan jaringan tanpa IPv6, koneksi wajib menggunakan fitur **Session Pooler** dari Supabase.
-3. **Environment:** Di file `.env`, gunakan parameter berikut (jangan pernah commit password ke Git):
+1. **Clone repositori ini:**
+   ```bash
+   git clone https://github.com/SatrioZulfandi/uts_fullstack.git
+   cd uts_fullstack
+   ```
+2. **Install Dependensi:**
+   ```bash
+   composer install
+   ```
+3. **Konfigurasi Lingkungan (.env):**
+   Salin `.env.example` ke `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+   *Atur kredensial Supabase PostgreSQL Anda. Jangan cantumkan password ini di GitHub.*
    ```env
    DB_CONNECTION=pgsql
-   DB_HOST=<supabase-session-pooler-host>
+   DB_HOST=<supabase-pooler-host>
    DB_PORT=5432
    DB_DATABASE=postgres
    DB_USERNAME=<supabase-username>
    DB_PASSWORD=<supabase-password>
    DB_SSLMODE=require
    ```
-4. **Setup:**
-   ```bash
-   php artisan migrate --force
-   php artisan db:seed --force
-   ```
-> ⚠️ **PERINGATAN TESTING**: Jangan pernah menjalankan perintah *automated test*, `migrate:fresh`, atau `db:wipe` jika `.env` masih mengarah ke database production Supabase ini. Selalu gunakan MySQL lokal yang terpisah untuk testing.
-
-*Dokumentasi lengkap deploy Supabase:* [docs/uas/06-supabase-deployment.md](docs/uas/06-supabase-deployment.md)
-
----
-
-## ⚙️ Cara Instalasi (MySQL Lokal)
-
-Jika Anda ingin menjalankan secara murni di MySQL lokal tanpa koneksi internet/Supabase:
-
-1. **Clone repositori ini**
-   ```bash
-   git clone https://github.com/SatrioZulfandi/uts_fullstack.git
-   cd uts_fullstack
-   ```
-
-2. **Install dependensi PHP**
-   ```bash
-   composer install
-   ```
-
-3. **Konfigurasi Environment**
-   Salin file `.env.example` menjadi `.env`.
-   ```bash
-   cp .env.example .env
-   ```
-   Atur koneksi database Anda di file `.env` (kembalikan ke `mysql`):
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=nama_database_anda
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-
-4. **Generate Application Key**
+4. **Generate Key:**
    ```bash
    php artisan key:generate
    ```
-
-5. **Migrasi Database & Seeding**
-   Jalankan migrasi beserta data awal (admin & member).
+5. **Migrasi Database & Seeding:**
    ```bash
-   php artisan migrate:fresh --seed
+   php artisan migrate --seed
    ```
 
-6. **Jalankan Server Lokal**
-   ```bash
-   php artisan serve
-   ```
-   Buka `http://127.0.0.1:8000` di browser.
+## 🚀 Cara Menjalankan Project
+Untuk melayani *request* dari Frontend, jalankan development server:
+```bash
+php artisan serve --port=8082
+```
+Backend akan berjalan di `http://127.0.0.1:8082`.
+Pastikan Anda menjalankan aplikasi Frontend di terminal lain.
 
----
-
-## 🔐 Kredensial Default
-
-Setelah menjalankan `php artisan migrate:fresh --seed`, Anda bisa menggunakan akun berikut:
-
-**Administrator (Akses Dashboard Web)**
-- **Email:** `admin@smarthub.com`
-- **Password:** `password`
-
-**Member (Akses REST API / Sanctum)**
-- **Email:** `satrio@member.com` | `zulfandi@member.com`
-- **Password:** `password`
-
----
-
-## 🧪 Testing
-
-Jalankan pengujian automated API dan fungsionalitas dengan perintah berikut:
+## 🧪 Testing & Kualitas Kode
+Aplikasi dilengkapi dengan rangkaian automated test API yang menjamin stabilitas.
+Untuk menjalankannya:
 ```bash
 php artisan test
 ```
-*Pastikan konfigurasi database di phpunit.xml sudah sesuai dengan environment Anda (disarankan menggunakan database MySQL terpisah untuk testing seperti `db_uts_fullstack_testing`).*
 
----
+## 🔐 Akun Demo (Local Seeding)
+- **Admin:**
+  - Email: `admin@smarthub.com`
+  - Password: `password`
+- **Member:**
+  - Email: `satrio@member.com`
+  - Password: `password`
 
-## 📝 Catatan Tambahan
-
-- Akses ke rute `/admin/*` (Web & API) dilindungi oleh `AdminMiddleware` yang menolak akses bagi akun dengan role `member` (menghasilkan *403 Forbidden*).
-- Gunakan header `Accept: application/json` dan `Authorization: Bearer {token}` untuk menguji REST API. Anda harus menembak `/api/login` terlebih dahulu untuk mendapatkan token.
-- **Dokumentasi Lengkap API:** Silakan baca [03-api-documentation.md](docs/uas/03-api-documentation.md)
-- **Laporan Testing API:** Silakan baca [04-api-test-report.md](docs/uas/04-api-test-report.md)
-
----
-
-## 🔗 Tautan Penting & Deployment
-- **Frontend Repository:** `https://github.com/SatrioZulfandi/smart-hub-frontend`
-- **Backend Production URL:** `https://smart-hub-api-production.up.railway.app`
-- **Frontend Production URL:** `https://smart-hub-frontend-production.up.railway.app`
-
----
-
-## ⚠️ Known Limitations
-- Aplikasi masih bergantung pada Session Pooler Supabase karena tidak adanya IPv6 pada server saat *local testing*.
-- Fitur notifikasi email saat jadwal disetujui/check-in belum diimplementasikan.
-- Rate limiting hanya dibatasi secara global (default Laravel 60 req/min).
+## 📖 Dokumentasi Lengkap
+Dokumentasi teknis menyeluruh tersimpan di direktori `docs/uas/`:
+- [02-api-gap-analysis.md](docs/uas/02-api-gap-analysis.md) - Rencana struktur API.
+- [03-api-documentation.md](docs/uas/03-api-documentation.md) - Dokumentasi *endpoints*, *payloads*, dan format balasan *JSON*.
+- [06-supabase-deployment.md](docs/uas/06-supabase-deployment.md) - Panduan spesifik terkait integrasi Supabase.
 
 <p align="center">&copy; 2026 Smart-Hub Management System</p>
