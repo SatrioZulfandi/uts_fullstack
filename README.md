@@ -26,6 +26,10 @@ Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman invent
   - Manajemen penuh (CRUD) untuk *Inventory* dan *Schedules*.
   - Lookup daftar *Members*.
   - *Catatan:* Semua route Admin dilindungi oleh validasi Role Admin.
+- **Aturan Check-in (Check-in Rules):**
+  - Check-in hanya dapat dilakukan oleh member yang bersangkutan.
+  - Menggunakan *Database Transaction* dengan `lockForUpdate` untuk mencegah *Double Check-in*.
+  - Jika terjadi tabrakan, API akan mengembalikan `409 Conflict`.
 
 ---
 
@@ -145,5 +149,19 @@ php artisan test
 - Gunakan header `Accept: application/json` dan `Authorization: Bearer {token}` untuk menguji REST API. Anda harus menembak `/api/login` terlebih dahulu untuk mendapatkan token.
 - **Dokumentasi Lengkap API:** Silakan baca [03-api-documentation.md](docs/uas/03-api-documentation.md)
 - **Laporan Testing API:** Silakan baca [04-api-test-report.md](docs/uas/04-api-test-report.md)
+
+---
+
+## 🔗 Tautan Penting & Deployment
+- **Frontend Repository:** `https://github.com/SatrioZulfandi/smart-hub-frontend`
+- **Backend Production URL:** `https://smart-hub-api-production.up.railway.app`
+- **Frontend Production URL:** `https://smart-hub-frontend-production.up.railway.app`
+
+---
+
+## ⚠️ Known Limitations
+- Aplikasi masih bergantung pada Session Pooler Supabase karena tidak adanya IPv6 pada server saat *local testing*.
+- Fitur notifikasi email saat jadwal disetujui/check-in belum diimplementasikan.
+- Rate limiting hanya dibatasi secara global (default Laravel 60 req/min).
 
 <p align="center">&copy; 2026 Smart-Hub Management System</p>
