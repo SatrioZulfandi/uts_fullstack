@@ -35,27 +35,55 @@ class MemberController extends Controller
     }
 
     /**
-     * POST /api/check-in
-     * Proses check-in peralatan secara real-time oleh member.
-     *
-     * Logic:
-     * 1. Validasi schedule_id dari payload.
-     * 2. Pastikan jadwal milik user yang sedang login.
-     * 3. Pastikan status jadwal masih 'booked' (belum di-check-in).
-     * 4. Ubah status borrowing_schedule menjadi 'checked_in'.
-     * 5. Ubah status inventory menjadi 'borrowed'.
+     * GET /api/my-schedules
+     * Mengambil daftar jadwal milik member yang login.
      */
-    public function checkIn(Request $request): JsonResponse
+    public function schedules(Request $request): JsonResponse
     {
-        // Validasi input
-        $request->validate([
-            'schedule_id' => 'required|exists:borrowing_schedules,id',
-        ]);
+        $query = BorrowingSchedule::with('inventory')
+            ->where('user_id', $request->user()->id);
 
-        // Cari jadwal peminjaman berdasarkan ID
-        $schedule = BorrowingSchedule::with('inventory')->find($request->schedule_id);
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
 
-        // Validasi kepemilikan: pastikan jadwal milik user yang sedang login
+        $schedules = $query->orderBy('start_time', 'desc')->paginate($request->input('per_page', 10));
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Daftar jadwal peminjaman berhasil diambil.',
+            'data' => $schedules->items(),
+            'meta' => [
+                'current_page' => $schedules->currentPage(),
+                'last_page' => $schedules->lastPage(),
+                'per_page' => $schedules->perPage(),
+                'total' => $schedules->total(),
+            ],
+            'links' => [
+                'first' => $schedules->url(1),
+                'last' => $schedules->url($schedules->lastPage()),
+                'prev' => $schedules->previousPageUrl(),
+                'next' => $schedules->nextPageUrl(),
+            ],
+        ], 200);
+    }
+
+    /**
+     * GET /api/my-schedules/{schedule}
+     * Mengambil detail jadwal peminjaman milik member yang login.
+     */
+    public function showSchedule(Request $request, $id): JsonResponse
+    {
+        $schedule = BorrowingSchedule::with('inventory')->find($id);
+
+        if (! $schedule) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Jadwal tidak ditemukan.',
+                'data' => null,
+            ], 404);
+        }
+
         if ($schedule->user_id !== $request->user()->id) {
             return response()->json([
                 'status' => false,
@@ -64,27 +92,80 @@ class MemberController extends Controller
             ], 403);
         }
 
-        // Validasi status: pastikan jadwal masih berstatus 'booked'
-        if ($schedule->status !== 'booked') {
-            return response()->json([
-                'status' => false,
-                'message' => 'Jadwal ini tidak dapat di-check-in. Status saat ini: '.$schedule->status,
-                'data' => null,
-            ], 422);
-        }
+        return response()->json([
+            'status' => true,
+            'message' => 'Detail jadwal berhasil diambil.',
+            'data' => $schedule,
+        ], 200);
+    }
+
+    /**
+     * POST /api/check-in
+     * Proses check-in peralatan secara real-time oleh member.
+     */
+    public function checkIn(Request $request): JsonResponse
+    {
+        // Validasi input
+        $request->validate([
+            'schedule_id' => 'required|exists:borrowing_schedules,id',
+        ]);
+
+        $response = null;
 
         // Gunakan database transaction untuk memastikan konsistensi data
-        DB::transaction(function () use ($schedule) {
-            // Ubah status jadwal peminjaman menjadi 'checked_in'
-            $schedule->update(['status' => 'checked_in']);
+        DB::transaction(function () use ($request, &$response) {
+            // Ambil jadwal dengan lockForUpdate untuk mencegah race conditions
+            $schedule = BorrowingSchedule::with(['inventory', 'user'])
+                ->lockForUpdate()
+                ->find($request->schedule_id);
 
-            // Ubah status inventaris menjadi 'borrowed'
-            $schedule->inventory->update(['status' => 'borrowed']);
+            // Validasi kepemilikan
+            if ($schedule->user_id !== $request->user()->id) {
+                $response = response()->json([
+                    'status' => false,
+                    'message' => 'Anda tidak memiliki akses ke jadwal ini.',
+                    'data' => null,
+                ], 403);
+
+                return;
+            }
+
+            // Validasi status jadwal
+            if ($schedule->status !== 'booked') {
+                $response = response()->json([
+                    'status' => false,
+                    'message' => 'Jadwal ini tidak dapat di-check-in. Status saat ini: '.$schedule->status,
+                    'data' => null,
+                ], 409); // 409 Conflict
+
+                return;
+            }
+
+            // Validasi ketersediaan inventory
+            $inventory = Inventory::lockForUpdate()->find($schedule->inventory_id);
+            if ($inventory->status !== 'available') {
+                $response = response()->json([
+                    'status' => false,
+                    'message' => 'Inventaris tidak tersedia saat ini. Status: '.$inventory->status,
+                    'data' => null,
+                ], 409);
+
+                return;
+            }
+
+            // Ubah status
+            $schedule->update(['status' => 'checked_in']);
+            $inventory->update(['status' => 'borrowed']);
+
+            // Set the schedule for email logic later
+            $request->attributes->set('checked_in_schedule', $schedule);
         });
 
-        // Refresh data setelah update & load relasi yang dibutuhkan untuk email
-        $schedule->refresh();
-        $schedule->load(['inventory', 'user']);
+        if ($response) {
+            return $response;
+        }
+
+        $schedule = $request->attributes->get('checked_in_schedule');
 
         // Kirim notifikasi email ke member
         $emailSent = false;
@@ -97,7 +178,6 @@ class MemberController extends Controller
                 'schedule_id' => $schedule->id,
             ]);
         } catch (\Exception $e) {
-            // Log error tetapi jangan gagalkan proses check-in
             Log::error('Gagal mengirim email check-in.', [
                 'user_id' => $schedule->user->id,
                 'schedule_id' => $schedule->id,

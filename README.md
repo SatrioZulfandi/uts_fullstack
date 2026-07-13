@@ -11,10 +11,16 @@ Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman invent
 - **Statistik:** Ringkasan jumlah inventaris, status, dan peminjaman aktif.
 - **UI/UX Modern:** Tampilan *Light Mode* yang bersih dan premium menggunakan Vanilla CSS.
 
-### 📱 Member Area (REST API)
-- **Otentikasi Token:** Menggunakan Laravel Sanctum.
-- **Daftar Inventaris:** Endpoint untuk melihat inventaris yang tersedia (`/api/inventories`).
-- **Check-in:** Endpoint untuk melakukan check-in peminjaman secara *real-time* (`/api/check-in`).
+### 📱 REST API Lengkap
+- **Otentikasi:** Login via Laravel Sanctum (Bearer Token).
+- **Member API:**
+  - Lihat daftar inventaris.
+  - Lihat daftar jadwal peminjaman (`/api/my-schedules`).
+  - Proses check-in peralatan secara atomik (`/api/check-in`).
+- **Admin API:**
+  - Manajemen penuh (CRUD) untuk *Inventory* dan *Schedules*.
+  - Lookup daftar *Members*.
+  - *Catatan:* Semua route Admin dilindungi oleh validasi Role Admin.
 
 ---
 
@@ -89,9 +95,21 @@ Setelah menjalankan `php artisan migrate:fresh --seed`, Anda bisa menggunakan ak
 
 ---
 
+## 🧪 Testing
+
+Jalankan pengujian automated API dan fungsionalitas dengan perintah berikut:
+```bash
+php artisan test
+```
+*Pastikan konfigurasi database di phpunit.xml sudah sesuai dengan environment Anda (disarankan menggunakan database MySQL terpisah untuk testing seperti `db_uts_fullstack_testing`).*
+
+---
+
 ## 📝 Catatan Tambahan
 
-- Akses ke rute `/admin/*` dilindungi oleh `AdminMiddleware` yang akan menolak akses bagi akun dengan role `member` (menghasilkan *403 Forbidden*).
-- Gunakan Postman atau Insomnia untuk menguji REST API member. Anda harus menembak `/api/login` terlebih dahulu untuk mendapatkan **Bearer Token**.
+- Akses ke rute `/admin/*` (Web & API) dilindungi oleh `AdminMiddleware` yang menolak akses bagi akun dengan role `member` (menghasilkan *403 Forbidden*).
+- Gunakan header `Accept: application/json` dan `Authorization: Bearer {token}` untuk menguji REST API. Anda harus menembak `/api/login` terlebih dahulu untuk mendapatkan token.
+- **Dokumentasi Lengkap API:** Silakan baca [03-api-documentation.md](docs/uas/03-api-documentation.md)
+- **Laporan Testing API:** Silakan baca [04-api-test-report.md](docs/uas/04-api-test-report.md)
 
 <p align="center">&copy; 2026 Smart-Hub Management System</p>

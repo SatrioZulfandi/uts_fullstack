@@ -38,6 +38,9 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Hapus token lama agar hanya satu sesi aktif
+        $user->tokens()->delete();
+
         // Buat token Sanctum untuk user yang berhasil login
         $token = $user->createToken('smart-hub-token')->plainTextToken;
 
@@ -58,13 +61,38 @@ class AuthController extends Controller
     }
 
     /**
+     * GET /api/me
+     * Mengambil data user yang sedang login.
+     */
+    public function me(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Data pengguna berhasil diambil.',
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                ],
+            ],
+        ], 200);
+    }
+
+    /**
      * POST /api/logout
-     * Menghapus token yang sedang digunakan (opsional).
+     * Menghapus token yang sedang digunakan.
      */
     public function logout(Request $request): JsonResponse
     {
-        // Hapus token saat ini
-        $request->user()->currentAccessToken()->delete();
+        // Hapus token saat ini jika ada
+        $accessToken = $request->user()->currentAccessToken();
+        if ($accessToken) {
+            $accessToken->delete();
+        }
 
         return response()->json([
             'status' => true,
