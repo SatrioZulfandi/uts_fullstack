@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BorrowingSchedule;
-use App\Models\User;
-use App\Models\Inventory;
 use App\Http\Requests\ScheduleRequest;
-use Illuminate\Http\Request;
+use App\Models\BorrowingSchedule;
+use App\Models\Inventory;
+use App\Models\User;
 
 /**
  * Resource Controller untuk mengelola Jadwal Peminjaman (Admin Dashboard).
@@ -32,7 +31,7 @@ class ScheduleController extends Controller
      */
     public function create()
     {
-        $users       = User::where('role', 'member')->get();
+        $users = User::where('role', 'member')->get();
         $inventories = Inventory::where('status', 'available')->get();
 
         return view('admin.schedules.create', compact('users', 'inventories'));
@@ -68,7 +67,7 @@ class ScheduleController extends Controller
      */
     public function edit(BorrowingSchedule $schedule)
     {
-        $users       = User::where('role', 'member')->get();
+        $users = User::where('role', 'member')->get();
         $inventories = Inventory::all();
 
         return view('admin.schedules.edit', compact('schedule', 'users', 'inventories'));

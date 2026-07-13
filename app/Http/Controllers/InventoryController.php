@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Inventory;
 use App\Http\Requests\InventoryRequest;
-use Illuminate\Http\Request;
+use App\Models\Inventory;
 
 /**
  * Resource Controller untuk mengelola data Inventaris (Admin Dashboard).

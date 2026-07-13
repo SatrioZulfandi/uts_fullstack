@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Models\BorrowingSchedule;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -29,7 +30,7 @@ class CheckInSuccessMail extends Mailable
     /**
      * Create a new message instance.
      *
-     * @param BorrowingSchedule $schedule Data jadwal peminjaman yang sudah di-check-in.
+     * @param  BorrowingSchedule  $schedule  Data jadwal peminjaman yang sudah di-check-in.
      */
     public function __construct(BorrowingSchedule $schedule)
     {
@@ -59,7 +60,7 @@ class CheckInSuccessMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {

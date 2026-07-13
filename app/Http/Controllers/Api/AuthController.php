@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 /**
  * API Controller untuk autentikasi member.
@@ -18,15 +17,12 @@ class AuthController extends Controller
     /**
      * POST /api/login
      * Autentikasi member dan mengembalikan Bearer Token.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function login(Request $request): JsonResponse
     {
         // Validasi input login
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
@@ -34,11 +30,11 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         // Verifikasi kredensial: user harus ada dan password cocok
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Email atau password salah.',
-                'data'    => null,
+                'data' => null,
             ], 401);
         }
 
@@ -46,14 +42,14 @@ class AuthController extends Controller
         $token = $user->createToken('smart-hub-token')->plainTextToken;
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Login berhasil.',
-            'data'    => [
-                'user'  => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
+            'data' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
                     'email' => $user->email,
-                    'role'  => $user->role,
+                    'role' => $user->role,
                 ],
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -64,9 +60,6 @@ class AuthController extends Controller
     /**
      * POST /api/logout
      * Menghapus token yang sedang digunakan (opsional).
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function logout(Request $request): JsonResponse
     {
@@ -74,9 +67,9 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Logout berhasil.',
-            'data'    => null,
+            'data' => null,
         ], 200);
     }
 }

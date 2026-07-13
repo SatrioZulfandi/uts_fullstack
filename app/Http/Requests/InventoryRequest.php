@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -20,14 +21,14 @@ class InventoryRequest extends FormRequest
     /**
      * Aturan validasi untuk request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'name'        => 'required|string|max:255',
-            'type'        => 'required|in:workspace,equipment',
-            'status'      => 'required|in:available,maintenance,borrowed',
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:workspace,equipment',
+            'status' => 'required|in:available,maintenance,borrowed',
             'description' => 'nullable|string',
         ];
     }
@@ -42,8 +43,8 @@ class InventoryRequest extends FormRequest
         return [
             'name.required' => 'Nama inventaris wajib diisi.',
             'type.required' => 'Tipe inventaris wajib dipilih.',
-            'type.in'       => 'Tipe harus berupa workspace atau equipment.',
-            'status.in'     => 'Status harus berupa available, maintenance, atau borrowed.',
+            'type.in' => 'Tipe harus berupa workspace atau equipment.',
+            'status.in' => 'Status harus berupa available, maintenance, atau borrowed.',
         ];
     }
 }

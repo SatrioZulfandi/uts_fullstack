@@ -15,15 +15,15 @@ return new class extends Migration
         Schema::create('borrowing_schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')
-                  ->constrained('users')
-                  ->onDelete('cascade');                                         // Relasi ke tabel users
+                ->constrained('users')
+                ->onDelete('cascade');                                         // Relasi ke tabel users
             $table->foreignId('inventory_id')
-                  ->constrained('inventories')
-                  ->onDelete('cascade');                                         // Relasi ke tabel inventories
+                ->constrained('inventories')
+                ->onDelete('cascade');                                         // Relasi ke tabel inventories
             $table->datetime('start_time');                                      // Waktu mulai peminjaman
             $table->datetime('end_time');                                        // Waktu selesai peminjaman
             $table->enum('status', ['booked', 'checked_in', 'completed', 'cancelled'])
-                  ->default('booked');                                           // Status peminjaman
+                ->default('booked');                                           // Status peminjaman
             $table->timestamps();
         });
     }

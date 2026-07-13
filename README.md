@@ -20,7 +20,8 @@ Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman invent
 
 ## 🛠️ Tech Stack
 
-- **Framework:** Laravel 12
+- **Framework:** Laravel 13
+- **PHP:** >= 8.3
 - **Database:** MySQL
 - **Frontend:** Blade Templating + Vanilla CSS (Custom Linear-style UI)
 - **API Authentication:** Laravel Sanctum

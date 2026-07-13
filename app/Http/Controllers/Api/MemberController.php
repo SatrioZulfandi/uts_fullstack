@@ -21,8 +21,6 @@ class MemberController extends Controller
     /**
      * GET /api/inventories
      * Mengambil daftar inventaris yang berstatus 'available'.
-     *
-     * @return JsonResponse
      */
     public function availableInventories(): JsonResponse
     {
@@ -30,9 +28,9 @@ class MemberController extends Controller
         $inventories = Inventory::where('status', 'available')->get();
 
         return response()->json([
-            'status'  => true,
+            'status' => true,
             'message' => 'Daftar inventaris yang tersedia.',
-            'data'    => $inventories,
+            'data' => $inventories,
         ], 200);
     }
 
@@ -46,9 +44,6 @@ class MemberController extends Controller
      * 3. Pastikan status jadwal masih 'booked' (belum di-check-in).
      * 4. Ubah status borrowing_schedule menjadi 'checked_in'.
      * 5. Ubah status inventory menjadi 'borrowed'.
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function checkIn(Request $request): JsonResponse
     {
@@ -63,18 +58,18 @@ class MemberController extends Controller
         // Validasi kepemilikan: pastikan jadwal milik user yang sedang login
         if ($schedule->user_id !== $request->user()->id) {
             return response()->json([
-                'status'  => false,
+                'status' => false,
                 'message' => 'Anda tidak memiliki akses ke jadwal ini.',
-                'data'    => null,
+                'data' => null,
             ], 403);
         }
 
         // Validasi status: pastikan jadwal masih berstatus 'booked'
         if ($schedule->status !== 'booked') {
             return response()->json([
-                'status'  => false,
-                'message' => 'Jadwal ini tidak dapat di-check-in. Status saat ini: ' . $schedule->status,
-                'data'    => null,
+                'status' => false,
+                'message' => 'Jadwal ini tidak dapat di-check-in. Status saat ini: '.$schedule->status,
+                'data' => null,
             ], 422);
         }
 
@@ -98,24 +93,24 @@ class MemberController extends Controller
             $emailSent = true;
 
             Log::info('Check-in email berhasil dikirim.', [
-                'user_id'     => $schedule->user->id,
+                'user_id' => $schedule->user->id,
                 'schedule_id' => $schedule->id,
             ]);
         } catch (\Exception $e) {
             // Log error tetapi jangan gagalkan proses check-in
             Log::error('Gagal mengirim email check-in.', [
-                'user_id'     => $schedule->user->id,
+                'user_id' => $schedule->user->id,
                 'schedule_id' => $schedule->id,
-                'error'       => $e->getMessage(),
+                'error' => $e->getMessage(),
             ]);
         }
 
         return response()->json([
-            'status'     => true,
-            'message'    => 'Check-in berhasil dilakukan.',
+            'status' => true,
+            'message' => 'Check-in berhasil dilakukan.',
             'email_sent' => $emailSent,
-            'data'       => [
-                'schedule'  => $schedule,
+            'data' => [
+                'schedule' => $schedule,
                 'inventory' => $schedule->inventory,
             ],
         ], 200);
