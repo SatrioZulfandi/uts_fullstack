@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('name');                                              // Nama inventaris
             $table->enum('type', ['workspace', 'equipment']);                    // Tipe: ruang kerja atau peralatan
             $table->enum('status', ['available', 'maintenance', 'borrowed'])
-                  ->default('available');                                        // Status ketersediaan
+                ->default('available');                                        // Status ketersediaan
             $table->text('description')->nullable();                             // Deskripsi inventaris
             $table->timestamps();
         });
