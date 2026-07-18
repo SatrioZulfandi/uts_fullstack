@@ -16,8 +16,8 @@ Smart-Hub adalah aplikasi manajemen inventaris untuk ruang kerja (workspace) dan
 
 1. **Clone repositori ini:**
    ```bash
-   git clone https://github.com/SatrioZulfandi/uts_fullstack.git
-   cd uts_fullstack
+   git clone https://github.com/SatrioZulfandi/uts_fullstack_backend.git
+   cd uts_fullstack_backend
    ```
 2. **Install Dependensi:**
    ```bash
