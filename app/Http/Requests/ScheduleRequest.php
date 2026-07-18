@@ -30,7 +30,7 @@ class ScheduleRequest extends FormRequest
             'inventory_id' => 'required|exists:inventories,id',
             'start_time' => 'required|date|after_or_equal:now',
             'end_time' => 'required|date|after:start_time',
-            'status' => 'required|in:booked,checked_in,completed,cancelled',
+            'status' => 'required|in:pending,booked,checked_in,completed,cancelled',
         ];
     }
 

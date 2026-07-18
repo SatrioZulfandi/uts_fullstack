@@ -55,16 +55,38 @@
                     <td style="font-size:13px;color:var(--text-secondary);">{{ $sched->start_time->format('d M Y') }}<br><span style="font-size:12px;color:var(--text-muted);">{{ $sched->start_time->format('H:i') }}</span></td>
                     <td style="font-size:13px;color:var(--text-secondary);">{{ $sched->end_time->format('d M Y') }}<br><span style="font-size:12px;color:var(--text-muted);">{{ $sched->end_time->format('H:i') }}</span></td>
                     <td>
-                        @if($sched->status === 'confirmed')
-                            <span class="badge badge-success">Confirmed</span>
-                        @elseif($sched->status === 'pending')
+                        @if($sched->status === 'pending')
                             <span class="badge badge-warning">Pending</span>
+                        @elseif($sched->status === 'booked')
+                            <span class="badge badge-success">Booked</span>
+                        @elseif($sched->status === 'checked_in')
+                            <span class="badge badge-info">Checked In</span>
+                        @elseif($sched->status === 'completed')
+                            <span class="badge badge-success">Completed</span>
                         @else
-                            <span class="badge badge-neutral">Cancelled</span>
+                            <span class="badge badge-neutral">{{ ucfirst($sched->status) }}</span>
                         @endif
                     </td>
                     <td>
                         <div class="actions">
+                            @if($sched->status === 'pending')
+                                <form method="POST" action="{{ route('admin.schedules.approve', $sched) }}" onsubmit="return confirm('Setujui peminjaman ini?')" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--success);" title="Setujui">
+                                        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ route('admin.schedules.reject', $sched) }}" onsubmit="return confirm('Tolak peminjaman ini?')" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger);" title="Tolak">
+                                        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            @endif
                             <a href="{{ route('admin.schedules.show', $sched) }}" class="btn btn-ghost btn-sm" title="Detail">
                                 <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -76,7 +98,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                 </svg>
                             </a>
-                            <form method="POST" action="{{ route('admin.schedules.destroy', $sched) }}" onsubmit="return confirm('Hapus jadwal ini?')">
+                            <form method="POST" action="{{ route('admin.schedules.destroy', $sched) }}" onsubmit="return confirm('Hapus jadwal ini?')" style="display:inline;">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn btn-ghost btn-sm" style="color:var(--danger);" title="Hapus">
                                     <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

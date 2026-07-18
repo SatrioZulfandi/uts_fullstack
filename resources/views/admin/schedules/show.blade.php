@@ -25,12 +25,16 @@
     <div class="card">
         <div class="card-header">
             <div class="card-title">Informasi Jadwal</div>
-            @if($schedule->status === 'confirmed')
-                <span class="badge badge-success">Confirmed</span>
-            @elseif($schedule->status === 'pending')
+            @if($schedule->status === 'pending')
                 <span class="badge badge-warning">Pending</span>
+            @elseif($schedule->status === 'booked')
+                <span class="badge badge-success">Booked</span>
+            @elseif($schedule->status === 'checked_in')
+                <span class="badge badge-info">Checked In</span>
+            @elseif($schedule->status === 'completed')
+                <span class="badge badge-success">Completed</span>
             @else
-                <span class="badge badge-neutral">Cancelled</span>
+                <span class="badge badge-neutral">{{ ucfirst($schedule->status) }}</span>
             @endif
         </div>
         <div class="card-body">
@@ -78,6 +82,27 @@
         <div class="card">
             <div class="card-header"><div class="card-title">Aksi</div></div>
             <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+                @if($schedule->status === 'pending')
+                    <form method="POST" action="{{ route('admin.schedules.approve', $schedule) }}" onsubmit="return confirm('Setujui peminjaman ini?')">
+                        @csrf
+                        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;background:var(--success);border-color:var(--success);">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Setujui Peminjaman
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('admin.schedules.reject', $schedule) }}" onsubmit="return confirm('Tolak peminjaman ini?')">
+                        @csrf
+                        <button type="submit" class="btn btn-secondary" style="width:100%;justify-content:center;color:var(--danger);border-color:var(--danger);">
+                            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="14" height="14">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            Tolak Peminjaman
+                        </button>
+                    </form>
+                    <hr style="border:0;border-top:1px solid var(--border);margin:8px 0;width:100%;">
+                @endif
                 <a href="{{ route('admin.schedules.edit', $schedule) }}" class="btn btn-secondary" style="justify-content:center;">Edit Jadwal</a>
                 <form method="POST" action="{{ route('admin.schedules.destroy', $schedule) }}" onsubmit="return confirm('Hapus jadwal ini?')">
                     @csrf @method('DELETE')

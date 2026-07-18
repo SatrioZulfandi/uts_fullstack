@@ -1,19 +1,19 @@
 # Smart-Hub Management System - Backend API
 
-Smart-Hub adalah aplikasi web berbasis Laravel untuk mengelola peminjaman inventaris seperti ruang kerja (workspace) dan perlengkapan studio (equipment). Aplikasi ini menyediakan REST API lengkap untuk otentikasi, manajemen inventaris, penjadwalan, dan transaksi check-in yang aman.
+Smart-Hub adalah aplikasi manajemen inventaris untuk ruang kerja (workspace) dan perlengkapan studio (equipment). Aplikasi ini awalnya merupakan REST API, namun kini telah dikembangkan menjadi aplikasi *Fullstack* (menggunakan Laravel Blade) yang menyediakan UI langsung dari server yang sama.
 
-## 🚀 Fitur Utama & Struktur
-- **Manajemen Inventaris:** Admin dapat mengelola *workspace* dan *equipment*.
-- **Manajemen Penjadwalan:** Admin dapat membuat dan mengubah jadwal dengan mekanisme pencegahan jadwal bertabrakan (*overlap prevention*).
-- **Check-in Atomik:** Mekanisme peminjaman menggunakan transaksi database dan penguncian baris (`lockForUpdate`) untuk mencegah *Double Check-in*.
-- **Role-based Access Control:** Rute API terpisah untuk akses Admin dan Member, dilindungi oleh *Middleware* khusus.
+## 🚀 Fitur Terbaru & Pembaruan
+- **Akses Multi-Role Terintegrasi:** Admin dan Member kini dapat login di port yang sama (`8000`) dan diarahkan ke *dashboard* masing-masing secara otomatis.
+- **Member Web UI:** Member sekarang memiliki antarmuka (UI) web untuk melihat inventaris, membuat pengajuan jadwal peminjaman baru, serta melakukan *check-in* dan *check-out* mandiri.
+- **Workflow Persetujuan Admin:** Admin memiliki kemampuan penuh untuk *Approve* (menyetujui) atau *Reject* (menolak) pengajuan jadwal dari member langsung dari dashboard.
+- **Check-in & Check-out Atomik:** Mekanisme peminjaman menggunakan penguncian baris (`lockForUpdate`) untuk mencegah jadwal bertabrakan.
 
 ## 🛠️ Tech Stack & Arsitektur
-Aplikasi Backend ini beroperasi murni sebagai penyedia antarmuka REST API dan sumber kebenaran (*Source of Truth*) bagi aplikasi *Frontend*.
-- **Framework:** Laravel 13
+- **Framework:** Laravel 11/13
+- **Tampilan (View):** Laravel Blade Template dengan Vanilla CSS (Desain modern & responsif)
 - **PHP:** >= 8.3
-- **Database:** Supabase PostgreSQL (Local & Production)
-- **API Authentication:** Laravel Sanctum (Token-based)
+- **Database:** PostgreSQL (Supabase)
+- **Otentikasi:** Laravel Auth (Session-based)
 
 ## 🔗 Tautan Repositori Pasangan
 - **Frontend Repository:** [https://github.com/SatrioZulfandi/smart-hub-frontend](https://github.com/SatrioZulfandi/smart-hub-frontend)

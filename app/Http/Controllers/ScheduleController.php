@@ -98,4 +98,32 @@ class ScheduleController extends Controller
             ->route('admin.schedules.index')
             ->with('success', 'Jadwal peminjaman berhasil dihapus.');
     }
+
+    /**
+     * Menyetujui peminjaman yang berstatus pending.
+     */
+    public function approve(BorrowingSchedule $schedule)
+    {
+        if ($schedule->status !== 'pending') {
+            return back()->with('error', 'Hanya jadwal dengan status pending yang dapat disetujui.');
+        }
+
+        $schedule->update(['status' => 'booked']);
+
+        return back()->with('success', 'Jadwal peminjaman berhasil disetujui (Booked).');
+    }
+
+    /**
+     * Menolak peminjaman yang berstatus pending.
+     */
+    public function reject(BorrowingSchedule $schedule)
+    {
+        if ($schedule->status !== 'pending') {
+            return back()->with('error', 'Hanya jadwal dengan status pending yang dapat ditolak.');
+        }
+
+        $schedule->update(['status' => 'cancelled']);
+
+        return back()->with('success', 'Jadwal peminjaman berhasil ditolak (Cancelled).');
+    }
 }

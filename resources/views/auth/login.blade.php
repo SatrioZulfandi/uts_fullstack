@@ -51,7 +51,7 @@
         .login-footer span { color: var(--accent); }
 
         .divider { height: 1px; background: var(--border); margin: 20px 0; position: relative; }
-        .divider::after { content: 'Admin Portal'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg); padding: 0 10px; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+        .divider::after { content: 'Smart-Hub Portal'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg); padding: 0 10px; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -63,14 +63,20 @@
             </svg>
         </div>
         <h1>Smart-Hub</h1>
-        <p>Masuk ke panel manajemen</p>
+        <p>Masuk ke portal layanan</p>
     </div>
 
     <div class="login-card">
         <div class="divider"></div>
 
-        @if ($errors->any())
+        @if ($errors->any() && !$errors->has('email') && !$errors->has('password'))
             <div class="alert">Email atau password salah. Silakan coba lagi.</div>
+        @elseif ($errors->has('email') && !str_contains($errors->first('email'), 'member'))
+            <div class="alert">{{ $errors->first('email') }}</div>
+        @elseif ($errors->has('email') && str_contains($errors->first('email'), 'member'))
+            <div class="alert" style="background:#fef3c7;border-color:#fde68a;color:#92400e;">
+                {{ $errors->first('email') }}
+            </div>
         @endif
 
         @if (session('status'))
